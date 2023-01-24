@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #guesser{
+        display: flex;
+        justify-content: space-between;
+        width: 25%;
+      }
+      #game{
+        display: none;
+      }
+
+      .small, .big{
+        padding: 20px;
+        height: 10px;
+        background-color: lightgray;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+
+    <h1>Let's play Mastermind</h1>
+    <button id="playbutton" onclick="play()">Play!</button>
+    <div id="game">
+      <button onclick="guessBoard()">Make a guess</button>
+      <div id="board"></div>
+      <div id="guesser">
+        <div id="guesses"></div>
+        <div id="small_pegs"></div>
+      </div>
+    </div>
+
+
+    <script>
+      var gameOver = false;
+      var board = [];
+      var numGuesses = 0;
+
+      var play = function(){
+        board = createBoard(board);
+        document.getElementById("game").style.display = "block";
+        document.getElementById("playbutton").style.display = "none";
+      }
+
+      var isValidInput = function(input){
+        if(input.includes(" ")){
+          alert("Please do not enter any spaces");
+          return false;
+        } else if (input.length != 5){
+          alert("Please enter 5 numbers");
+          return false;
+        } else {
+          var values = input.split("");
+          for(var i = 0; i < values.length; i++){
+            if(values[i] > 8 || values[i] < 1){
+              alert("Please only enter number 1-8");
+              return false;
+            }
+          }
+          return true;
+        }
+      }
+
+      var createBoard = function(board){
+        var validInput = false;
+        while(!validInput){
+          board = prompt("Please enter a string of 5 numbers (1-8) to create the board. Ex: 11111, 11222");
+          validInput = isValidInput(board);
+        }
+        return board;
+      }
+
+      var guessBoard = function(){
+        if(gameOver){
+          return;
+        }
+        numGuesses++;
+        var validInput = false;
+        while(!validInput){
+          var guess = prompt("Guess the board by entering string of 5 numbers (1-8). Ex: 11111, 11222")
+          validInput = isValidInput(guess);
+        }
+        updateGuess(guess);
+        if(numGuesses == 12 && !gameOver){
+          gameOver = true;
+          document.getElementById("board").innerHTML = "Code: " + board;
+          alert("Game over");
+        }
+      }
+
+
+      var updateGuess = function(guess){
+        var oldGuesses = document.getElementById("guesses").innerHTML;
+        document.getElementById("guesses").innerHTML = oldGuesses + "<div class='big'>"+guess+"</div>";
+        //win case
+        if(guess == board){
+            document.getElementById("board").innerHTML = "Code: " + board;
+            gameOver = true;
+            alert("You win");
+            return;
+        }
+        boardCopy = board.slice();
+        var smallPegs = [];
+        for(var i = 0; i < guess.length; i++){
+          //calculate the red pegs first
+          if(boardCopy[i] == guess[i]){
+            smallPegs.push("red");
+            boardCopy = boardCopy.substr(0, i) + '0' + boardCopy.substr(i + 1);
+            guess = guess.substr(0, i) + '0' + guess.substr(i + 1);
+          }
+        }
+        for(var i = 0; i < guess.length; i++){
+          //calculate the white pegs
+          if(guess[i] == 0){
+            continue;
+          }
+          if(boardCopy.includes(guess[i]) && boardCopy[i] != guess[i]){
+            smallPegs.push("white");
+            boardCopy = boardCopy.substr(0, boardCopy.indexOf(guess[i])) + '0' +
+              boardCopy.substr(boardCopy.indexOf(guess[i]) + 1);
+          }
+        }
+        var oldPegs = document.getElementById("small_pegs").innerHTML
+        if(smallPegs.length == 0){
+          document.getElementById("small_pegs").innerHTML = oldPegs + "<div class='small'></div>"
+        } else {
+          document.getElementById("small_pegs").innerHTML = oldPegs + "<div class='small'>"+smallPegs.join(" ")+"</div>";
+        }
+      }
+
+    </script>
+  </body>
+</html>
